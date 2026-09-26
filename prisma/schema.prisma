@@ -1,0 +1,118 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum TeamStatus {
+  UNCONFIRMED
+  CONTACTED
+  CONFIRMED
+  CHECKED_IN
+  WAITLISTED
+  DISQUALIFIED
+}
+
+enum ParticipantRole {
+  LEADER
+  MEMBER
+  MENTOR
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  events      Event[]
+  smtpConfigs SmtpConfig[]
+  createdAt   DateTime     @default(now())
+}
+
+model Event {
+  id          String          @id @default(cuid())
+  title       String
+  slug        String          @unique
+  description String?
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teams       Team[]
+  templates   AssetTemplate[]
+  emailLogs   EmailLog[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Team {
+  id           String        @id @default(cuid())
+  teamNumber   Int?
+  name         String
+  status       TeamStatus    @default(UNCONFIRMED)
+  notes        String?
+  customFields Json?
+  eventId      String
+  event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  members      Participant[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([eventId, status])
+}
+
+model Participant {
+  id          String          @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  githubUrl   String?
+  linkedinUrl String?
+  institution String?
+  role        ParticipantRole @default(MEMBER)
+  isConfirmed Boolean         @default(false)
+  teamId      String
+  team        Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([email])
+  @@index([teamId])
+}
+
+model AssetTemplate {
+  id           String   @id @default(cuid())
+  name         String
+  type         String   // TICKET or CERTIFICATE
+  baseImageUrl String
+  width        Int
+  height       Int
+  fieldConfig  Json     // Array of text placeholder coordinate mappings
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+model SmtpConfig {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  host        String
+  port        Int
+  secure      Boolean  @default(true)
+  username    String
+  password    String   // Encrypted at rest
+  senderName  String
+  senderEmail String
+}
+
+model EmailLog {
+  id           String   @id @default(cuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  recipient    String
+  subject      String
+  status       String   // SENT, FAILED, QUEUED
+  errorMessage String?
+  sentAt       DateTime @default(now())
+}
