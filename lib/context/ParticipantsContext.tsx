@@ -97,10 +97,15 @@ export function ParticipantsProvider({ children }: { children: React.ReactNode }
   );
 }
 
+const defaultContextValue: ParticipantsContextType = {
+  participants: SAMPLE_PARTICIPANTS,
+  csvFileName: null,
+  uploadStats: null,
+  setParticipantsData: () => {},
+  resetToSampleData: () => {},
+};
+
 export function useParticipants() {
   const context = useContext(ParticipantsContext);
-  if (!context) {
-    throw new Error("useParticipants must be used within a ParticipantsProvider");
-  }
-  return context;
+  return context || defaultContextValue;
 }

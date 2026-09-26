@@ -1,22 +1,35 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CsvUploader } from "@/components/uploader/CsvUploader";
-import { OperationsBoard } from "@/components/board/OperationsBoard";
-import { Card, Button, Badge } from "@/components/brutal";
-import { SAMPLE_PARTICIPANTS } from "@/lib/data/sample";
-import { CSVParseResult, NormalizedParticipant } from "@/types";
-import { Users, ShieldCheck, UserCheck, Clock, Sparkles, Layers } from "lucide-react";
+import { Card, Button } from "@/components/brutal";
+import { useParticipants } from "@/lib/context/ParticipantsContext";
+import { CSVParseResult } from "@/types";
+import {
+  Users,
+  ShieldCheck,
+  UserCheck,
+  Clock,
+  Sparkles,
+  Layers,
+  ArrowRight,
+  FileSpreadsheet,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const [participants, setParticipants] = useState<NormalizedParticipant[]>(SAMPLE_PARTICIPANTS);
+  const router = useRouter();
+  const {
+    participants,
+    csvFileName,
+    setParticipantsData,
+    resetToSampleData,
+  } = useParticipants();
 
-  const handleDataLoaded = (result: CSVParseResult) => {
-    if (result.validRows.length > 0) {
-      setParticipants(result.validRows);
-    }
+  const handleDataLoaded = (result: CSVParseResult, fileName?: string) => {
+    setParticipantsData(result, fileName);
   };
 
   const totalTeams = new Set(participants.map((p) => p.teamName)).size;
@@ -36,7 +49,7 @@ export default function DashboardPage() {
                 <span className="font-mono text-xs font-bold">Fall Hackathon 2026</span>
               </div>
               <h1 className="text-3xl md:text-4xl font-black text-black tracking-tight uppercase">
-                Operations & Registration Command Center
+                Operations &amp; Registration Command Center
               </h1>
               <p className="text-sm font-bold text-neutral-800 mt-1">
                 Automated CSV ingestion, phone normalization (+91/E.164), canvas badge studio, and agentic RAG retrieval.
@@ -44,6 +57,12 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-3 flex-shrink-0">
+              <Link href="/matrix">
+                <Button variant="secondary" size="md" className="whitespace-nowrap">
+                  <Users className="w-4 h-4 mr-1.5" />
+                  Teams Matrix
+                </Button>
+              </Link>
               <Link href="/studio">
                 <Button variant="secondary" size="md" className="whitespace-nowrap">
                   <Layers className="w-4 h-4 mr-1.5" />
@@ -96,22 +115,65 @@ export default function DashboardPage() {
         </div>
 
         {/* Ingestion Area */}
-        <CsvUploader onDataLoaded={handleDataLoaded} />
-
-        {/* Operations Matrix */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-black uppercase tracking-tight text-black">
-                Teams & Participants Matrix
+              <h2 className="text-2xl font-black uppercase tracking-tight text-black flex items-center gap-2">
+                <FileSpreadsheet className="w-6 h-6 text-black" />
+                Participant CSV Ingestion
               </h2>
               <p className="text-xs font-bold text-neutral-600">
-                Real-time multi-status board with one-click communication triggers and Kanban drag-and-drop
+                Upload your attendee spreadsheet to sanitize phone numbers and auto-map team columns
               </p>
             </div>
+
+            <Link href="/matrix">
+              <Button variant="primary" size="sm" className="flex items-center gap-1.5">
+                <span>View Teams Matrix</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
           </div>
 
-          <OperationsBoard participants={participants} />
+          <CsvUploader
+            onDataLoaded={handleDataLoaded}
+            onProceedToMatrix={() => router.push("/matrix")}
+          />
+        </div>
+
+        {/* Existing Data Callout / Jump to Matrix */}
+        <div className="border-2 border-black bg-white p-4 shadow-[4px_4px_0px_0px_#000] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-black uppercase tracking-wide">
+              Active Hackathon Dataset
+            </h3>
+            <p className="text-xs font-bold text-neutral-600 mt-0.5">
+              Currently loaded:{" "}
+              <span className="font-mono text-black underline font-bold">
+                {csvFileName || "Sample Hackathon Attendee Callset"}
+              </span>{" "}
+              ({participants.length} attendees across {totalTeams} teams)
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {csvFileName && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={resetToSampleData}
+                title="Reset back to sample attendee data"
+              >
+                Reset to Sample
+              </Button>
+            )}
+            <Link href="/matrix">
+              <Button variant="primary" size="md" className="flex items-center gap-1.5">
+                <span>Open Teams &amp; Participants Matrix</span>
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </ProtectedRoute>
