@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Card, CardTitle, Button, Input, Badge } from "@/components/brutal";
 import { TemplatePlaceholder } from "@/types";
+import { useParticipants } from "@/lib/context/ParticipantsContext";
 import { SAMPLE_PARTICIPANTS } from "@/lib/data/sample";
 import {
   Layers,
@@ -90,7 +91,8 @@ export default function StudioPage() {
   const bgInputRef = useRef<HTMLInputElement>(null);
   const dragStartRef = useRef<{ startX: number; startY: number; initialPosX: number; initialPosY: number } | null>(null);
 
-  const currentParticipant = SAMPLE_PARTICIPANTS[selectedParticipantIdx] || SAMPLE_PARTICIPANTS[0];
+  const { participants } = useParticipants();
+  const currentParticipant = participants[selectedParticipantIdx] || participants[0] || SAMPLE_PARTICIPANTS[0];
 
   const [placeholders, setPlaceholders] = useState<TemplatePlaceholder[]>([
     {
@@ -329,7 +331,7 @@ export default function StudioPage() {
                 aria-label="Preview badge for participant"
                 className="text-xs font-bold bg-[#FFE800] border border-black px-2 py-0.5 outline-none"
               >
-                {SAMPLE_PARTICIPANTS.map((p, idx) => (
+                {participants.map((p, idx) => (
                   <option key={idx} value={idx}>
                     {p.name} ({p.teamName})
                   </option>
@@ -340,7 +342,7 @@ export default function StudioPage() {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => alert(`Batch export queued for ${SAMPLE_PARTICIPANTS.length} participants at ${canvasWidth}x${canvasHeight}px.`)}
+              onClick={() => alert(`Batch export queued for ${participants.length} participants at ${canvasWidth}x${canvasHeight}px.`)}
             >
               <Download className="w-3.5 h-3.5 mr-1" />
               Export (.zip)

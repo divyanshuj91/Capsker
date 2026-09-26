@@ -7,10 +7,11 @@ import { parseAndNormalizeCsv } from "@/lib/normalizer/csv-parser";
 import { CSVParseResult, NormalizedParticipant } from "@/types";
 
 interface CsvUploaderProps {
-  onDataLoaded: (result: CSVParseResult) => void;
+  onDataLoaded: (result: CSVParseResult, fileName?: string) => void;
+  onProceedToMatrix?: () => void;
 }
 
-export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
+export function CsvUploader({ onDataLoaded, onProceedToMatrix }: CsvUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [parseResult, setParseResult] = useState<CSVParseResult | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -29,7 +30,7 @@ export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
       if (content) {
         const result = parseAndNormalizeCsv(content);
         setParseResult(result);
-        onDataLoaded(result);
+        onDataLoaded(result, file.name);
       }
     };
     reader.readAsText(file);
@@ -132,6 +133,32 @@ export function CsvUploader({ onDataLoaded }: CsvUploaderProps) {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Action Callout to move to next page */}
+          <div className="border-2 border-black bg-[#FFE800] p-4 shadow-[4px_4px_0px_0px_#000] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-black" />
+                <h4 className="font-black text-sm uppercase tracking-wider text-black">
+                  Ready for Teams &amp; Participants Matrix
+                </h4>
+              </div>
+              <p className="text-xs font-bold text-neutral-800 mt-1">
+                {parseResult.validRows.length} attendees mapped &amp; cleansed. Move to the next page to manage statuses, search, and communication triggers.
+              </p>
+            </div>
+            {onProceedToMatrix && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={onProceedToMatrix}
+                className="whitespace-nowrap bg-black text-[#FFE800] hover:bg-neutral-800 shadow-[3px_3px_0px_0px_#000] flex items-center gap-1.5"
+              >
+                <span>Proceed to Teams Matrix</span>
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
           </div>
 
           {parseResult.invalidRows.length > 0 && (

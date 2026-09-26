@@ -96,7 +96,7 @@ The platform is structured as an event-driven system built on Next.js 14, combin
 
 ---
 
-## 4. Design System: Neobrutalism Specification
+## 4. Visual Identity Specifications
 
 The user interface follows Neobrutalist design tenets to maximize contrast and eliminate visual ambiguity during fast-paced live events:
 
@@ -109,7 +109,7 @@ The user interface follows Neobrutalist design tenets to maximize contrast and e
   * **Confirmed / Active**: `#00F084` (Neo Green)
   * **Alert / Disqualified**: `#FF66C4` (Punch Pink)
   * **Information / In-Progress**: `#38BDF8` (Sky Blue)
-  * **Waigit push -u origin maintlisted**: `#FB923C` (Orange)
+  * **Waitlisted**: `#FB923C` (Orange)
 
 ---
 

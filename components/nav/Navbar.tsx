@@ -15,7 +15,7 @@ import {
   Layers,
   Sparkles,
   Send,
-  User,
+  Users,
   Settings,
   ChevronDown,
   Shield,
@@ -89,6 +89,18 @@ export function Navbar() {
                     >
                       <LayoutDashboard className="w-3.5 h-3.5 flex-shrink-0" />
                       <span>Dashboard</span>
+                    </Link>
+
+                    <Link
+                      href="/matrix"
+                      className={`h-9 px-3.5 inline-flex items-center justify-center gap-1.5 text-xs font-black uppercase whitespace-nowrap border-2 border-black transition-all ${
+                        pathname === "/matrix"
+                          ? "bg-[#FFE800] shadow-[2px_2px_0px_0px_#000]"
+                          : "bg-white hover:bg-neutral-100 shadow-[2px_2px_0px_0px_#000]"
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>Matrix</span>
                     </Link>
 
                     <Link
