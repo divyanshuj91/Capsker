@@ -7,7 +7,7 @@ import { OperationsBoard } from "@/components/board/OperationsBoard";
 import { Card, Button, Badge } from "@/components/brutal";
 import { SAMPLE_PARTICIPANTS } from "@/lib/data/sample";
 import { CSVParseResult, NormalizedParticipant } from "@/types";
-import { Users, ShieldCheck, UserCheck, Clock, Sparkles } from "lucide-react";
+import { Users, ShieldCheck, UserCheck, Clock, Sparkles, Layers } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -43,14 +43,15 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-shrink-0">
               <Link href="/studio">
-                <Button variant="secondary" size="md">
+                <Button variant="secondary" size="md" className="whitespace-nowrap">
+                  <Layers className="w-4 h-4 mr-1.5" />
                   Badge Studio
                 </Button>
               </Link>
               <Link href="/intel">
-                <Button variant="purple" size="md">
+                <Button variant="purple" size="md" className="whitespace-nowrap">
                   <Sparkles className="w-4 h-4 mr-1.5" />
                   Ask Intel RAG
                 </Button>
