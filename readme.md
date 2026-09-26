@@ -1,4 +1,4 @@
-# ⚡ capsker
+#  Capsker
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=flat-square)](https://nextjs.org/)
@@ -109,7 +109,7 @@ The user interface follows Neobrutalist design tenets to maximize contrast and e
   * **Confirmed / Active**: `#00F084` (Neo Green)
   * **Alert / Disqualified**: `#FF66C4` (Punch Pink)
   * **Information / In-Progress**: `#38BDF8` (Sky Blue)
-  * **Waitlisted**: `#FB923C` (Orange)
+  * **Waigit push -u origin maintlisted**: `#FB923C` (Orange)
 
 ---
 
