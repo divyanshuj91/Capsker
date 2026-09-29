@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import {
   ColumnMapping,
   CSVParseResult,
-  NormalizedParticipant,
+  CsvParticipant,
   NormalizedParticipantSchema,
 } from "@/types";
 import { detectColumnMapping } from "./headers";
@@ -29,7 +29,7 @@ export function parseAndNormalizeCsv(
     ...userMappingOverride,
   };
 
-  const validRows: NormalizedParticipant[] = [];
+  const validRows: CsvParticipant[] = [];
   const invalidRows: { row: number; data: Record<string, string>; error: string }[] = [];
 
   const teamKey = detectedMapping.teamName || "Team";

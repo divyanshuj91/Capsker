@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { Card, Button, Badge } from "@/components/brutal";
@@ -9,6 +10,7 @@ import {
   Layers,
   Sparkles,
   Send,
+  CheckCircle,
   CheckCircle2,
   ArrowRight,
   ShieldCheck,
@@ -24,6 +26,75 @@ import {
 
 export default function LandingPage() {
   const { user, openAuthModal } = useAuth();
+
+  const [templateName, setTemplateName] = useState(
+    "Hackathon Participant Pass"
+  );
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+
+  // Assuming bgImage, canvasWidth, canvasHeight, placeholders are defined in your component state or props
+  const [bgImage, setBgImage] = useState("");
+  const [canvasWidth, setCanvasWidth] = useState(800);
+  const [canvasHeight, setCanvasHeight] = useState(600);
+  const [placeholders, setPlaceholders] = useState([]);
+
+  const handleSaveTemplate = async () => {
+    if (!bgImage) {
+      alert("Please upload a base image before saving the template.");
+      return;
+    }
+
+    const name = window.prompt(
+      "Template name:",
+      templateName
+    );
+
+    if (!name?.trim()) {
+      return;
+    }
+
+    setTemplateName(name.trim());
+    setIsSavingTemplate(true);
+
+    try {
+      const response = await fetch("/api/templates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          type: "TICKET",
+          baseImageUrl: bgImage,
+          width: canvasWidth,
+          height: canvasHeight,
+          fieldConfig: placeholders,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Failed to save template"
+        );
+      }
+
+      alert(
+        `Template "${name.trim()}" saved successfully.`
+      );
+    } catch (error) {
+      console.error("Save template failed:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to save template"
+      );
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
 
   return (
     <div className="space-y-24 py-6">
@@ -89,7 +160,7 @@ export default function LandingPage() {
       {/* HERO INTERACTIVE PREVIEW CARD */}
       <section className="max-w-5xl mx-auto">
         <div className="border-[3px] border-black bg-white shadow-[10px_10px_0px_0px_#000] p-4 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-black pb-3">
+          <div className="flex flex-wrap items-center justify-between border-b-2 border-black pb-3 gap-2">
             <div className="flex items-center gap-2">
               <div className="w-3.5 h-3.5 rounded-full border border-black bg-[#FF66C4]" />
               <div className="w-3.5 h-3.5 rounded-full border border-black bg-[#FFE800]" />
@@ -98,9 +169,21 @@ export default function LandingPage() {
                 capsker-ops-console: ~/active-event
               </span>
             </div>
+
             <div className="flex items-center gap-2">
               <Badge variant="confirmed">500+ INGESTED</Badge>
               <Badge variant="purple">AGENT RAG LIVE</Badge>
+
+              {/* Added Button Here */}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleSaveTemplate}
+                disabled={isSavingTemplate}
+              >
+                <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                {isSavingTemplate ? "Saving..." : "Save Template"}
+              </Button>
             </div>
           </div>
 

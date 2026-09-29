@@ -21,18 +21,16 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const {
-    participants,
-    csvFileName,
-    setParticipantsData,
-    resetToSampleData,
-  } = useParticipants();
+
+  const { participants, csvFileName, eventId, setParticipantsData } =
+    useParticipants();
 
   const handleDataLoaded = (result: CSVParseResult, fileName?: string) => {
     setParticipantsData(result, fileName);
   };
 
   const totalTeams = new Set(participants.map((p) => p.teamName)).size;
+
   const totalLeaders = participants.filter((p) => p.role === "LEADER").length;
 
   return (
@@ -46,31 +44,51 @@ export default function DashboardPage() {
                 <span className="bg-black text-[#FFE800] font-black text-xs px-2 py-0.5 uppercase tracking-wider">
                   Hackathon Ops Engine
                 </span>
-                <span className="font-mono text-xs font-bold">Fall Hackathon 2026</span>
+
+                <span className="font-mono text-xs font-bold">
+                  Fall Hackathon 2026
+                </span>
               </div>
+
               <h1 className="text-3xl md:text-4xl font-black text-black tracking-tight uppercase">
                 Operations &amp; Registration Command Center
               </h1>
+
               <p className="text-sm font-bold text-neutral-800 mt-1">
-                Automated CSV ingestion, phone normalization (+91/E.164), canvas badge studio, and agentic RAG retrieval.
+                Automated CSV ingestion, phone normalization (+91/E.164), canvas
+                badge studio, and agentic RAG retrieval.
               </p>
             </div>
 
             <div className="flex items-center gap-3 flex-shrink-0">
               <Link href="/matrix">
-                <Button variant="secondary" size="md" className="whitespace-nowrap">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="whitespace-nowrap"
+                >
                   <Users className="w-4 h-4 mr-1.5" />
                   Teams Matrix
                 </Button>
               </Link>
+
               <Link href="/studio">
-                <Button variant="secondary" size="md" className="whitespace-nowrap">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  className="whitespace-nowrap"
+                >
                   <Layers className="w-4 h-4 mr-1.5" />
                   Badge Studio
                 </Button>
               </Link>
+
               <Link href="/intel">
-                <Button variant="purple" size="md" className="whitespace-nowrap">
+                <Button
+                  variant="purple"
+                  size="md"
+                  className="whitespace-nowrap"
+                >
                   <Sparkles className="w-4 h-4 mr-1.5" />
                   Ask Intel RAG
                 </Button>
@@ -83,33 +101,53 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card variant="yellow">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-neutral-800">Total Teams</span>
+              <span className="text-xs font-black uppercase text-neutral-800">
+                Total Teams
+              </span>
+
               <Users className="w-4 h-4 text-black" />
             </div>
+
             <p className="text-3xl font-black text-black mt-2">{totalTeams}</p>
           </Card>
 
           <Card variant="green">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-neutral-800">Participants</span>
+              <span className="text-xs font-black uppercase text-neutral-800">
+                Participants
+              </span>
+
               <UserCheck className="w-4 h-4 text-black" />
             </div>
-            <p className="text-3xl font-black text-black mt-2">{participants.length}</p>
+
+            <p className="text-3xl font-black text-black mt-2">
+              {participants.length}
+            </p>
           </Card>
 
           <Card variant="blue">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-neutral-800">Team Leads</span>
+              <span className="text-xs font-black uppercase text-neutral-800">
+                Team Leads
+              </span>
+
               <ShieldCheck className="w-4 h-4 text-black" />
             </div>
-            <p className="text-3xl font-black text-black mt-2">{totalLeaders}</p>
+
+            <p className="text-3xl font-black text-black mt-2">
+              {totalLeaders}
+            </p>
           </Card>
 
           <Card variant="pink">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-neutral-800">Status Sync</span>
+              <span className="text-xs font-black uppercase text-neutral-800">
+                Status Sync
+              </span>
+
               <Clock className="w-4 h-4 text-black" />
             </div>
+
             <p className="text-xl font-black text-black mt-2">Active Live</p>
           </Card>
         </div>
@@ -122,23 +160,35 @@ export default function DashboardPage() {
                 <FileSpreadsheet className="w-6 h-6 text-black" />
                 Participant CSV Ingestion
               </h2>
+
               <p className="text-xs font-bold text-neutral-600">
-                Upload your attendee spreadsheet to sanitize phone numbers and auto-map team columns
+                Upload your attendee spreadsheet to sanitize phone numbers and
+                auto-map team columns
               </p>
             </div>
 
             <Link href="/matrix">
-              <Button variant="primary" size="sm" className="flex items-center gap-1.5">
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex items-center gap-1.5"
+              >
                 <span>View Teams Matrix</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             </Link>
           </div>
-
-          <CsvUploader
-            onDataLoaded={handleDataLoaded}
-            onProceedToMatrix={() => router.push("/matrix")}
-          />
+          {eventId ? (
+            <CsvUploader
+              eventId={eventId}
+              onDataLoaded={handleDataLoaded}
+              onProceedToMatrix={() => router.push("/matrix")}
+            />
+          ) : (
+            <div className="border-2 border-black bg-yellow-100 p-6 font-bold">
+              Loading event...
+            </div>
+          )}
         </div>
 
         {/* Existing Data Callout / Jump to Matrix */}
@@ -147,29 +197,25 @@ export default function DashboardPage() {
             <h3 className="text-sm font-black uppercase tracking-wide">
               Active Hackathon Dataset
             </h3>
+
             <p className="text-xs font-bold text-neutral-600 mt-0.5">
               Currently loaded:{" "}
               <span className="font-mono text-black underline font-bold">
-                {csvFileName || "Sample Hackathon Attendee Callset"}
+                {csvFileName || "PostgreSQL participant dataset"}
               </span>{" "}
               ({participants.length} attendees across {totalTeams} teams)
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            {csvFileName && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={resetToSampleData}
-                title="Reset back to sample attendee data"
-              >
-                Reset to Sample
-              </Button>
-            )}
             <Link href="/matrix">
-              <Button variant="primary" size="md" className="flex items-center gap-1.5">
+              <Button
+                variant="primary"
+                size="md"
+                className="flex items-center gap-1.5"
+              >
                 <span>Open Teams &amp; Participants Matrix</span>
+
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
