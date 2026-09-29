@@ -1,6 +1,6 @@
-import { NormalizedParticipant } from "@/types";
+import { CsvParticipant } from "@/types";
 
-export const SAMPLE_PARTICIPANTS: NormalizedParticipant[] = [
+export const SAMPLE_PARTICIPANTS: CsvParticipant[] = [
   {
     teamName: "Team NeuralForge",
     name: "Alex Rivera",
