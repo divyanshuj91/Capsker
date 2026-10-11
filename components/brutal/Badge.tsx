@@ -17,6 +17,7 @@ const badgeVariants = cva(
         disqualified: "bg-[#FF66C4] text-black",
         yellow: "bg-[#FFE800] text-black",
         purple: "bg-[#A78BFA] text-black",
+        neutral: "bg-[#FFFDF5] text-black",
       },
     },
     defaultVariants: {
