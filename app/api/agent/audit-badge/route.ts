@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auditBadgeDesign } from "@/lib/ai/gemma";
 
+export const maxDuration = 30;
+export const dynamic = "force-dynamic";
+
 const AuditRequestSchema = z.object({
   imageBase64: z.string().min(1),
   templateInfo: z.object({

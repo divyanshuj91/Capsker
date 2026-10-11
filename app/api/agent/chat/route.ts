@@ -3,6 +3,9 @@ import { z } from "zod";
 import { SAMPLE_PARTICIPANTS } from "@/lib/data/sample";
 import { queryGemmaChat } from "@/lib/ai/gemma";
 
+export const maxDuration = 30;
+export const dynamic = "force-dynamic";
+
 const ChatRequestSchema = z.object({
   message: z.string().min(1),
   history: z
