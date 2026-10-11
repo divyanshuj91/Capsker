@@ -29,7 +29,14 @@ import {
   ArrowRight,
   Maximize2,
   Crop,
+  Sparkles,
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
+  X,
+  Cpu,
 } from "lucide-react";
+import { BadgeAuditResult } from "@/lib/ai/gemma";
 
 interface TemplateSizePreset {
   id: string;
@@ -86,6 +93,10 @@ export default function StudioPage() {
   const [showBgControls, setShowBgControls] = useState<boolean>(false);
   const [dragModeActive, setDragModeActive] = useState<boolean>(false);
   const [isDraggingBg, setIsDraggingBg] = useState<boolean>(false);
+
+  const [isAuditing, setIsAuditing] = useState<boolean>(false);
+  const [showAuditModal, setShowAuditModal] = useState<boolean>(false);
+  const [auditResult, setAuditResult] = useState<BadgeAuditResult | null>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
@@ -278,6 +289,117 @@ export default function StudioPage() {
     }
   };
 
+  const captureBadgeAsDataUrl = async (): Promise<string> => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return "";
+
+    ctx.fillStyle = "#FFFDF5";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    if (bgImage) {
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          ctx.globalAlpha = bgOpacity / 100;
+          ctx.drawImage(img, bgPosX, bgPosY, canvasWidth * (bgScale / 100), canvasHeight * (bgScale / 100));
+          ctx.globalAlpha = 1.0;
+          resolve();
+        };
+        img.onerror = () => resolve();
+        img.src = bgImage;
+      });
+    } else {
+      ctx.fillStyle = "#FFE800";
+      ctx.fillRect(0, 0, canvasWidth, 40);
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 40);
+      ctx.lineTo(canvasWidth, 40);
+      ctx.stroke();
+
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 13px sans-serif";
+      ctx.fillText("CAPSKER 2026", 14, 25);
+    }
+
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(0, 0, canvasWidth, canvasHeight);
+
+    for (const ph of placeholders) {
+      if (ph.field === "qrCode") {
+        ctx.fillStyle = "#FFFFFF";
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.fillRect(ph.x, ph.y, 75, 75);
+        ctx.strokeRect(ph.x, ph.y, 75, 75);
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(ph.x + 8, ph.y + 8, 59, 59);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "bold 9px monospace";
+        ctx.fillText("QR SCAN", ph.x + 10, ph.y + 38);
+      } else {
+        let val = "";
+        if (ph.field === "participantName") val = currentParticipant.name;
+        else if (ph.field === "teamName") val = currentParticipant.teamName;
+        else if (ph.field === "role") val = currentParticipant.role;
+        else if (ph.field === "institution") val = currentParticipant.institution || "";
+        else if (ph.field === "teamNumber") val = "TEAM #42";
+
+        if (ph.textTransform === "uppercase") val = val.toUpperCase();
+        else if (ph.textTransform === "capitalize") val = val.charAt(0).toUpperCase() + val.slice(1);
+
+        ctx.fillStyle = ph.color || "#000000";
+        const weight = ph.fontWeight === "800" ? "800" : ph.fontWeight === "bold" ? "bold" : "normal";
+        ctx.font = `${weight} ${ph.fontSize}px sans-serif`;
+        ctx.fillText(val, ph.x, ph.y + ph.fontSize * 0.85);
+      }
+    }
+
+    return canvas.toDataURL("image/png");
+  };
+
+  const handleGemmaAudit = async () => {
+    setIsAuditing(true);
+    setShowAuditModal(true);
+    setAuditResult(null);
+    try {
+      const dataUrl = await captureBadgeAsDataUrl();
+      const res = await fetch("/api/agent/audit-badge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageBase64: dataUrl,
+          templateInfo: {
+            name: TEMPLATE_PRESETS.find((p) => p.id === selectedPresetId)?.name || "Custom Badge",
+            width: canvasWidth,
+            height: canvasHeight,
+            placeholders: placeholders.map((p) => ({
+              field: p.field,
+              x: p.x,
+              y: p.y,
+              fontSize: p.fontSize,
+              fontFamily: p.fontFamily,
+            })),
+          },
+        }),
+      });
+
+      if (!res.ok) throw new Error("Audit request failed");
+      const data: BadgeAuditResult = await res.json();
+      setAuditResult(data);
+    } catch (err) {
+      console.error("Audit error:", err);
+    } finally {
+      setIsAuditing(false);
+    }
+  };
+
   const activePlaceholder = placeholders.find((p) => p.id === activePlaceholderId);
 
   return (
@@ -338,6 +460,26 @@ export default function StudioPage() {
                 ))}
               </select>
             </div>
+
+            <Button
+              variant="purple"
+              size="sm"
+              onClick={handleGemmaAudit}
+              disabled={isAuditing}
+              className="bg-[#A78BFA] hover:bg-[#8B5CF6] text-black font-black flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            >
+              {isAuditing ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Auditing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Gemma 4 Audit</span>
+                </>
+              )}
+            </Button>
 
             <Button
               variant="primary"
@@ -1029,6 +1171,144 @@ export default function StudioPage() {
           </div>
         </div>
       </div>
+
+      {/* Gemma 4 Multimodal Audit Modal */}
+      {showAuditModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[#FFFDF5] border-4 border-black shadow-[8px_8px_0px_0px_#000] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+            <button
+              onClick={() => setShowAuditModal(false)}
+              className="absolute top-4 right-4 p-1.5 bg-white hover:bg-[#FFE800] border-2 border-black shadow-[2px_2px_0px_0px_#000]"
+              aria-label="Close Audit Modal"
+            >
+              <X className="w-4 h-4 text-black stroke-[3]" />
+            </button>
+
+            <div className="flex items-center gap-2 mb-4 border-b-2 border-black pb-3">
+              <div className="bg-[#A78BFA] border-2 border-black p-1.5 shadow-[2px_2px_0px_0px_#000]">
+                <Sparkles className="w-5 h-5 text-black" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tight text-black">
+                  Gemma 4 Multimodal Credential Audit
+                </h2>
+                <p className="text-xs font-bold text-neutral-600">
+                  Vision analysis for visual hierarchy, scan contrast, and print safety margins
+                </p>
+              </div>
+            </div>
+
+            {isAuditing ? (
+              <div className="py-12 flex flex-col items-center justify-center text-center space-y-3">
+                <Loader2 className="w-10 h-10 animate-spin text-black" />
+                <h3 className="font-black text-sm uppercase">Gemma 4 Multimodal Vision in progress...</h3>
+                <p className="text-xs font-mono text-neutral-600 max-w-md">
+                  Inspecting canvas layers, font readability, contrast ratios, and edge clearances.
+                </p>
+              </div>
+            ) : auditResult ? (
+              <div className="space-y-4">
+                {/* Score & Verdict Banner */}
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000]">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`text-2xl font-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_0px_#000] ${
+                        auditResult.score >= 85
+                          ? "bg-[#00F084] text-black"
+                          : auditResult.score >= 70
+                          ? "bg-[#FFE800] text-black"
+                          : "bg-[#FF66C4] text-black"
+                      }`}
+                    >
+                      {auditResult.score}/100
+                    </div>
+                    <div>
+                      <div className="text-xs font-black uppercase text-black">
+                        Layout Quality Score
+                      </div>
+                      <div className="text-[11px] font-mono font-bold text-neutral-600">
+                        {auditResult.verdict === "APPROVED" ? "PASS: Ready for Print & Dispatch" : "REVIEW NEEDED"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <span className="text-[10px] font-mono px-2 py-1 border border-black bg-[#FFFDF5]">
+                    {auditResult.isLiveApi ? "⚡ GEMMA 4 MULTIMODAL API" : "⚡ GEMMA 4 RUNTIME"}
+                  </span>
+                </div>
+
+                {/* Detailed Analysis Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="p-3 bg-white border-2 border-black text-xs space-y-1 shadow-[2px_2px_0px_0px_#000]">
+                    <div className="font-black uppercase flex items-center gap-1.5 text-black">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                      Visual Hierarchy
+                    </div>
+                    <p className="text-neutral-700 font-medium leading-relaxed">
+                      {auditResult.hierarchyReview}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-white border-2 border-black text-xs space-y-1 shadow-[2px_2px_0px_0px_#000]">
+                    <div className="font-black uppercase flex items-center gap-1.5 text-black">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                      QR Code &amp; Contrast
+                    </div>
+                    <p className="text-neutral-700 font-medium leading-relaxed">
+                      {auditResult.qrAndContrastCheck}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-white border-2 border-black text-xs space-y-1 shadow-[2px_2px_0px_0px_#000]">
+                    <div className="font-black uppercase flex items-center gap-1.5 text-black">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                      Margins &amp; Overlap
+                    </div>
+                    <p className="text-neutral-700 font-medium leading-relaxed">
+                      {auditResult.layoutAndOverlapFeedback}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-white border-2 border-black text-xs space-y-1 shadow-[2px_2px_0px_0px_#000]">
+                    <div className="font-black uppercase flex items-center gap-1.5 text-black">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                      Styling &amp; Print Finish
+                    </div>
+                    <p className="text-neutral-700 font-medium leading-relaxed">
+                      {auditResult.brutalistStyleNotes}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Recommendations */}
+                <div className="p-3.5 bg-[#FFFDF5] border-2 border-black shadow-[2px_2px_0px_0px_#000] space-y-2">
+                  <h4 className="text-xs font-black uppercase text-black">
+                    Actionable Recommendations:
+                  </h4>
+                  <ul className="space-y-1 text-xs font-mono text-neutral-800">
+                    {auditResult.recommendations.map((rec, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <span className="font-black text-black">▶</span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t-2 border-black">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setShowAuditModal(false)}
+                  >
+                    Done
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }

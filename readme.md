@@ -2,12 +2,13 @@
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black.svg?style=flat-square)](https://nextjs.org/)
+[![Gemma 4](https://img.shields.io/badge/Gemma_4-Multimodal_Open_Weights-A78BFA.svg?style=flat-square)](https://ai.google.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-Neobrutalism-FFE800.svg?style=flat-square)](https://tailwindcss.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-336791.svg?style=flat-square)](https://www.postgresql.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
-> **Enterprise Hackathon Operations Engine & Event Copilot**  
-> Streamline registration normalization, automated credential and ticket generation, hybrid Agentic RAG intelligence, and bulk delivery across distributed hackathon tracks.
+> **Enterprise Hackathon Operations Engine & Event Copilot — Powered by Google Gemma 4**  
+> Streamline registration normalization, automated credential and ticket generation, multimodal visual badge auditing, hybrid Agentic RAG intelligence, and bulk delivery across distributed hackathon tracks.  
+> *Built for Hacktoberfest Hack Day 2026 — Track: Best Use of Gemma 4 & Best Open-Source AI Project.*
 
 ---
 
@@ -77,18 +78,21 @@ The platform is structured as an event-driven system built on Next.js 14, combin
 ### 3.2 Dynamic Template & Asset Studio
 * **Interactive Canvas**: Powered by Fabric.js / Konva primitives, enabling event staff to upload arbitrary SVG, PNG, or PDF tickets and badge templates.
 * **Vectorized Placeholders**: Position dynamic nodes (`{{team_name}}`, `{{participant_name}}`, `{{institution}}`, `{{qr_code}}`) with pixel-level precision.
+* **Gemma 4 Multimodal Credential Audit**: Integrated vision analysis reviewing rendered canvas badge assets for QR contrast ratio, dynamic text overlap, print margin safety, and visual hierarchy scoring (0-100).
 * **Headless Export Pipeline**: Dispatches rendering jobs to BullMQ workers running `@react-pdf/renderer` or Skia-backed canvas renderers to batch generate zip files or link assets directly to individual email attachments.
 
-### 3.3 Hybrid Agentic RAG ("capsker Intel")
-* **Hybrid Search Formulation**: Combines deterministic SQL lookups (e.g., filtering teams by confirmed statuses or unverified phone numbers) with dense vector searches over attendee bios, project pitches, and organizer notes using `pgvector`.
-* **Tool Calling Engine**: Employs an LLM agent equipped with structured functions:
+### 3.3 Google Gemma 4 Agentic Intelligence ("Capsker Intel")
+* **Open-Weights Foundation**: Powered by Google's Gemma 4 open model via the Gemini API with zero third-party lock-in and local fallback support.
+* **Hybrid Search Formulation**: Combines deterministic SQL lookups (e.g., filtering teams by confirmed statuses or unverified phone numbers) with dense vector searches over attendee bios, project pitches, and organizer notes.
+* **Tool Calling Engine**: Employs Gemma 4 equipped with operational functions:
   ```typescript
-  // Agent Function Registry
+  // Gemma 4 Agent Tool Registry
   queryParticipantDirectory(filter: SearchFilterParams): Promise<Participant[]>;
   mutateTeamStatus(teamIds: string[], status: TeamStatus): Promise<BatchResult>;
+  summarizeStats(scope: string): Promise<AnalyticsReport>;
   queueTargetedBroadcast(filter: SearchFilterParams, templateId: string): Promise<QueueAck>;
   ```
-* **Streaming Copilot UI**: Provides real-time event stats and operational actions directly through an interactive slide-over console.
+* **Streaming Copilot UI**: Provides real-time event stats and operational actions directly through an interactive slide-over console with live tool feedback.
 
 ### 3.4 Multi-Tenant Mail Dispatcher & Queue Engine
 * **Isolation & Verification**: Supports custom SMTP connections (encrypted at rest using AES-256-GCM) alongside transactional providers (AWS SES, Resend).
