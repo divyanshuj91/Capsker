@@ -17,7 +17,7 @@ const ChatRequestSchema = z.object({
     )
     .optional()
     .default([]),
-  participants: z.array(z.record(z.any())).optional(),
+  participants: z.array(z.record(z.string(), z.any())).optional(),
   teamStatuses: z.record(z.string()).optional(),
 });
 

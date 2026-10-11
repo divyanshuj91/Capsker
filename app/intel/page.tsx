@@ -98,7 +98,7 @@ export default function IntelCopilotPage() {
               Agentic RAG Intel Copilot
             </h1>
             <p className="text-xs font-bold text-neutral-600 mt-1">
-              Hybrid operations engine powered by Google's Gemma 4 open model for hackathon intelligence and tool dispatch
+              Hybrid operations engine powered by Google&apos;s Gemma 4 open model for hackathon intelligence and tool dispatch
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ export default function IntelCopilotPage() {
               <Cpu className="w-3.5 h-3.5" />
               <span>Gemma 4 Active</span>
             </Badge>
-            <Badge variant="neutral" className="text-xs font-mono">
+            <Badge variant="default" className="text-xs font-mono">
               {participants.length} Records Loaded
             </Badge>
           </div>
