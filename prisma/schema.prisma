@@ -105,14 +105,36 @@ model SmtpConfig {
   senderName  String
   senderEmail String
 }
+enum EmailStatus {
+  QUEUED
+  PROCESSING
+  SENT
+  FAILED
+}
 
 model EmailLog {
-  id           String   @id @default(cuid())
-  eventId      String
-  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  recipient    String
-  subject      String
-  status       String   // SENT, FAILED, QUEUED
-  errorMessage String?
-  sentAt       DateTime @default(now())
+  id                String      @id @default(cuid())
+  eventId           String
+  event             Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  participantId     String
+  recipient String
+  subject   String
+  body      String
+
+  status            EmailStatus @default(QUEUED)
+
+  errorMessage      String?
+  providerMessageId String?
+
+  queuedAt          DateTime    @default(now())
+  processingAt      DateTime?
+  sentAt            DateTime?
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([eventId, status])
+  @@index([participantId])
+  @@index([recipient])
 }

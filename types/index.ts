@@ -52,7 +52,11 @@ export const NormalizedParticipantSchema = z.object({
   role: z.enum(["LEADER", "MEMBER", "MENTOR"]).default("MEMBER"),
 });
 
-export type NormalizedParticipant = z.infer<typeof NormalizedParticipantSchema>;
+export type CsvParticipant = z.infer<typeof NormalizedParticipantSchema>;
+
+export interface NormalizedParticipant extends CsvParticipant {
+  id: string;
+}
 
 export interface ColumnMapping {
   teamName?: string;
@@ -65,7 +69,7 @@ export interface ColumnMapping {
 }
 
 export interface CSVParseResult {
-  validRows: NormalizedParticipant[];
+  validRows: CsvParticipant[];
   invalidRows: { row: number; data: Record<string, string>; error: string }[];
   headers: string[];
   detectedMapping: ColumnMapping;
